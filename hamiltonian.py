@@ -16,6 +16,8 @@ class Path:
         self.do_not_visit = [np.array([0, 0])]
 
         self.current = np.array([0, 0])
+        self.back_track_levels = [[-1 for _ in range(x)] for _ in range(y)]
+        self.back_track_level = 0
 
     def check_point(self, check, list):
         for point in list:
@@ -34,13 +36,13 @@ class Path:
 
         return True
 
-    def get_neighbours(self, current, path_cor):
+    def get_neighbours(self):
         neighbours = []
         neighbouring_cells = [np.array([-1, 0]), np.array([1, 0]), np.array([0, -1]), np.array([0, 1])]
         for neighb in neighbouring_cells:
-            potential = current + neighb
+            potential = self.current + neighb
             if self.check_point(potential, self.path_cor) and (0 <= potential[0] < self.x) and\
-                    (0 <= potential[1] < self.y) and not np.array_equal(potential, self.do_not_visit):
+                    (0 <= potential[1] < self.y) and (self.back_track_level != self.back_track_levels[potential[1]][potential[0]]):
                 neighbours.append(potential)
 
         if neighbours:
@@ -63,18 +65,14 @@ class Path:
         # Continue
         # If not valid, add next neighbour
         # If no neighbours then pop and go back one
-        #print(self.path_cor)
-        neighbours = self.get_neighbours(self.current, self.path_cor)
-        if not neighbours:
-            self.do_not_visit.append(self.current)
-            self.current = self.path_cor.pop()
-            self.path_dir.pop()
-            print("S:", self.current, self.do_not_visit)
-        else:
-            print("N: ", self.current, neighbours)
-            self.do_not_visit = []
+        neighbours = self.get_neighbours()
+        if neighbours:
             next = random.choice(neighbours)
-            self.path_dir.append(next - self.current)
             self.path_cor.append(self.current)
             self.current = next
+            self.back_track_level += 1
+        else:
+            self.do_not_visit.append(self.current)
+            self.back_track_levels[self.current[1]][self.current[0]] = self.back_track_level + 2
+            self.current = self.path_cor.pop()
 

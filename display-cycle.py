@@ -17,8 +17,8 @@ class Game:
             pygame.draw.line(screen, (0, 0, 0), (0, 60*i), (600, 60*i), 1)
             pygame.draw.line(screen, (0, 0, 0), (60*i, 0), (60*i, 600), 1)
 
-        #if not self.graph.complete():
-        #    self.graph.solve()
+        if not self.graph.complete():
+            self.graph.solve()
 
         if len(self.graph.path_cor) >= 2:
             for i in range(1, len(self.graph.path_cor), 1):
@@ -66,7 +66,7 @@ def main():
         game.run_logic()
         game.display_screen(screen)
 
-        clock.tick(5)
+        clock.tick(120)
 
 
 if __name__ == "__main__":
