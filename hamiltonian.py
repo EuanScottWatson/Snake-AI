@@ -57,22 +57,5 @@ class Path:
         return False
 
     def solve(self):
-        # If all edges aren't included then continue
-        # Check final and first are next to each other
-        # Pick random adjacent square
-        # Check if it's valid
-        # Add if is
-        # Continue
-        # If not valid, add next neighbour
-        # If no neighbours then pop and go back one
-        neighbours = self.get_neighbours()
-        if neighbours:
-            next = random.choice(neighbours)
-            self.path_cor.append(self.current)
-            self.current = next
-            self.back_track_level += 1
-        else:
-            self.do_not_visit.append(self.current)
-            self.back_track_levels[self.current[1]][self.current[0]] = self.back_track_level + 2
-            self.current = self.path_cor.pop()
+        pass
 
