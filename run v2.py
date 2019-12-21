@@ -58,6 +58,12 @@ class Game:
                              (x2 * self.cell_size + (self.cell_size // 2), y2 * self.cell_size + (self.cell_size // 2)))
         '''
 
+    def game_over(self):
+        for body in self.snake[1:]:
+            if self.snake[0] == body:
+                return True
+        return False
+
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -67,6 +73,9 @@ class Game:
                     return True
                 if event.key == K_SPACE:
                     self.run_logic()
+
+        if self.game_over():
+            return True
 
     def display_screen(self, screen):
         screen.fill((255, 255, 255))
@@ -99,6 +108,12 @@ class Game:
             return True
         return False
 
+    def distance(self, x, y, e):
+        dist = self.path.path.index(getLinear(e[0], e[1], self.w)) - self.path.path.index(getLinear(x, y, self.w))
+        if abs(dist) > 1:
+            return True
+        return False
+
     def get_neighbours(self, x, y):
         neighbours = []
         left = [x - 1, y]
@@ -108,53 +123,43 @@ class Game:
 
         # If in range, add the relevant cells to the neighbours list
         if self.valid_coordinates(left):
-            neighbours.append(getLinear(left[0], left[1], self.w))
+            if self.distance(x, y, left):
+                neighbours.append(getLinear(left[0], left[1], self.w))
         if self.valid_coordinates(right):
-            neighbours.append(getLinear(right[0], right[1], self.w))
+            if self.distance(x, y, right):
+                neighbours.append(getLinear(right[0], right[1], self.w))
         if self.valid_coordinates(up):
-            neighbours.append(getLinear(up[0], up[1], self.w))
+            if self.distance(x, y, up):
+                neighbours.append(getLinear(up[0], up[1], self.w))
         if self.valid_coordinates(down):
-            neighbours.append(getLinear(down[0], down[1], self.w))
+            if self.distance(x, y, down):
+                neighbours.append(getLinear(down[0], down[1], self.w))
 
         return neighbours
 
-    def check_food_body(self, s, e):
-        if self.path.path.index(e) > self.path.path.index(getLinear(s[0], s[1], self.w)):
-            for n in range(getLinear(s[0], s[1], self.w), e, 1):
-                check = getXY(n, self.w)
-                if self.food == check or check in self.snake:
+    def check_food_body(self, s, jump):
+        head = getLinear(s[0], s[1], self.w)
+        if self.path.path.index(jump) > self.path.path.index(head):
+            # Straight forward check all between
+            for i in range(self.path.path.index(head) + 1, self.path.path.index(jump) + 1, 1):
+                check = getXY(self.path.path[i], self.w)
+                if ((check[0] == self.food[0]) and (check[1] == self.food[1])) or (check in self.snake):
                     return False
-        else:
-            for n in range(getLinear(s[0], s[1], self.w), len(self.path.path), 1):
-                check = getXY(n, self.w)
-                if self.food == check or check in self.snake:
-                    return False
-            for n in range(0, e, 1):
-                check = getXY(n, self.w)
-                if self.food == check or check in self.snake:
-                    return False
-        return True
+            return True
+        return False
 
     def new_head(self):
         [x, y] = self.snake[0]
         neighbours = self.get_neighbours(x, y)
         best = None
-        dist = 0
 
         for neighb in neighbours:
-            if self.path.path.index(neighb) > self.path.path.index(getLinear(x, y, self.w)) and self.check_food_body(
-                    [x, y], neighb):
-                if self.path.path.index(neighb) > self.path.path.index(getLinear(x, y, self.w)):
-                    new_dist = self.path.path.index(neighb) - self.path.path.index(getLinear(x, y, self.w))
-                    if new_dist > dist:
-                        best = neighb
-                else:
-                    new_dist = len(self.path.path) - self.path.path.index(neighb) + self.path.path.index(
-                        getLinear(x, y, self.w))
-                    if new_dist > dist:
-                        best = neighb
+            if abs(self.path.path.index(neighb) - self.path.path.index(getLinear(x, y, self.w))) > 1:
+                if self.check_food_body([x, y], neighb):
+                    best = neighb
 
         if best:
+            self.pointer = self.path.path.index(best)
             return getXY(best, self.w)
         else:
             self.pointer = (self.pointer + 1) % len(self.path.path)
@@ -174,6 +179,7 @@ class Game:
                 if self.new_body:
                     self.snake.append(tail)
                     self.new_body = False
+                self.check_food()
 
 
 def main():
@@ -183,7 +189,7 @@ def main():
 
     os.environ['SDL_VIDEO_CENTERED'] = "True"
 
-    n, m = 6, 5
+    n, m = 5, 4
     cell_size = 60
     width, height = m * cell_size, n * cell_size
 
@@ -195,7 +201,7 @@ def main():
 
     while not done:
         done = game.events()
-        #game.run_logic()
+        game.run_logic()
         game.display_screen(screen)
 
         clock.tick(3)
