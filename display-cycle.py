@@ -1,28 +1,30 @@
 import pygame, os
+import numpy as np
 from pygame.locals import *
-from hamiltonian_old import *
+from hamiltonian import *
 
 
 class Game:
-    def __init__(self):
-        self.graph = Path(10, 10)
-        self.graph.solve()
+    def __init__(self, n, m):
+        self.path = Path(m, n)
+        self.w = m
+        self.h = n
 
     def display(self, screen):
-        for j in range(10):
-            for i in range(10):
-                pygame.draw.circle(screen, (0, 0, 0), (60*i+30, 60*j+30), 15, 1)
+        for j in range(self.h):
+            for i in range(self.w):
+                pygame.draw.circle(screen, (0, 0, 0), (60 * i + 30, 60 * j + 30), 15, 1)
 
-        for i in range(10):
-            pygame.draw.line(screen, (0, 0, 0), (0, 60*i), (600, 60*i), 1)
-            pygame.draw.line(screen, (0, 0, 0), (60*i, 0), (60*i, 600), 1)
+        for i in range(self.h):
+            pygame.draw.line(screen, (0, 0, 0), (0, 60 * i), (self.w * 60, 60 * i), 1)
+        for i in range(self.w):
+            pygame.draw.line(screen, (0, 0, 0), (60 * i, 0), (60 * i, self.h * 60), 1)
 
-        if not self.graph.complete():
-            self.graph.solve()
+        for i in range(1, len(self.path.path), 1):
+            x1, y1 = getXY(self.path.path[i - 1], self.w)
+            x2, y2 = getXY(self.path.path[i], self.w)
 
-        if len(self.graph.path_cor) >= 2:
-            for i in range(1, len(self.graph.path_cor), 1):
-                pygame.draw.line(screen, (0, 0, 0), (self.graph.path_cor[i-1]*60 + np.array([30, 30])), (self.graph.path_cor[i]*60 + np.array([30, 30])), 1)
+            pygame.draw.line(screen, (0, 0, 0), (x1 * 60 + 30, y1 * 60 + 30), (x2 * 60 + 30, y2 * 60 + 30))
 
     def events(self):
         for event in pygame.event.get():
@@ -31,8 +33,6 @@ class Game:
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     return True
-                if event.key == K_SPACE:
-                    self.graph.solve()
 
     def display_screen(self, screen):
         screen.fill((255, 255, 255))
@@ -53,13 +53,14 @@ def main():
 
     os.environ['SDL_VIDEO_CENTERED'] = "True"
 
-    width, height = 600, 600
+    n, m = 10, 15
+    width, height = m * 60, n * 60
 
     screen = pygame.display.set_mode((width, height))
 
     done = False
     clock = pygame.time.Clock()
-    game = Game()
+    game = Game(n, m)
 
     while not done:
         done = game.events()
