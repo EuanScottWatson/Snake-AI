@@ -66,7 +66,7 @@ class Game:
                 if event.key == K_ESCAPE:
                     return True
                 if event.key == K_SPACE:
-                    self.add_body()
+                    self.pause = not self.pause
 
     def display_screen(self, screen):
         screen.fill((255, 255, 255))
@@ -94,18 +94,19 @@ class Game:
         self.new_body = True
 
     def run_logic(self):
-        if len(self.snake) != (self.w*self.h)+1:
-            self.check_food()
-            self.pointer = (self.pointer + 1) % len(self.path.path)
-            x, y = getXY(self.path.path[self.pointer], self.w)
-            tail = self.snake[-1]
-            if len(self.snake) > 1:
-                for i in range(len(self.snake)-1, 0, -1):
-                    self.snake[i] = self.snake[i-1]
-            self.snake[0] = [x, y]
-            if self.new_body:
-                self.snake.append(tail)
-                self.new_body = False
+        if not self.pause:
+            if len(self.snake) != (self.w*self.h)+1:
+                self.check_food()
+                self.pointer = (self.pointer + 1) % len(self.path.path)
+                x, y = getXY(self.path.path[self.pointer], self.w)
+                tail = self.snake[-1]
+                if len(self.snake) > 1:
+                    for i in range(len(self.snake)-1, 0, -1):
+                        self.snake[i] = self.snake[i-1]
+                self.snake[0] = [x, y]
+                if self.new_body:
+                    self.snake.append(tail)
+                    self.new_body = False
 
 
 def main():
