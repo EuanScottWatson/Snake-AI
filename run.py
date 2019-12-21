@@ -40,7 +40,6 @@ class Game:
         for i in range(1, len(self.path.path), 1):
             x1, y1 = getXY(self.path.path[i - 1], self.w)
             x2, y2 = getXY(self.path.path[i], self.w)
-
             pygame.draw.line(screen, (0, 0, 0), (x1 * 60 + 30, y1 * 60 + 30), (x2 * 60 + 30, y2 * 60 + 30))
         '''
 
