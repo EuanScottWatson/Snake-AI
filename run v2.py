@@ -12,6 +12,8 @@ class Game:
         self.h = n
         self.cell_size = cell_size
 
+        self.pause = False
+
         # Snake Stuff
         self.pointer = 0
         self.snake = [[0, 0]]
@@ -64,7 +66,7 @@ class Game:
                 if event.key == K_ESCAPE:
                     return True
                 if event.key == K_SPACE:
-                    self.add_body()
+                    self.run_logic()
 
     def display_screen(self, screen):
         screen.fill((255, 255, 255))
@@ -91,22 +93,28 @@ class Game:
     def add_body(self):
         self.new_body = True
 
+    def valid_coordinates(self, coor):
+        [x, y] = coor
+        if (0 <= x < self.w) and (0 <= y < self.h):
+            return True
+        return False
+
     def get_neighbours(self, x, y):
         neighbours = []
-        left = getLinear(x - 1, y, self.w)
-        right = getLinear(x + 1, y, self.w)
-        up = getLinear(x, y - 1, self.w)
-        down = getLinear(x, y + 1, self.w)
+        left = [x - 1, y]
+        right = [x + 1, y]
+        up = [x, y - 1]
+        down = [x, y + 1]
 
         # If in range, add the relevant cells to the neighbours list
-        if 0 <= left < self.w * self.h:
-            neighbours.append(left)
-        if 0 <= right < self.w * self.h:
-            neighbours.append(right)
-        if 0 <= up < self.w * self.h:
-            neighbours.append(up)
-        if 0 <= down < self.w * self.h:
-            neighbours.append(down)
+        if self.valid_coordinates(left):
+            neighbours.append(getLinear(left[0], left[1], self.w))
+        if self.valid_coordinates(right):
+            neighbours.append(getLinear(right[0], right[1], self.w))
+        if self.valid_coordinates(up):
+            neighbours.append(getLinear(up[0], up[1], self.w))
+        if self.valid_coordinates(down):
+            neighbours.append(getLinear(down[0], down[1], self.w))
 
         return neighbours
 
@@ -154,17 +162,18 @@ class Game:
             return [x, y]
 
     def run_logic(self):
-        if len(self.snake) != (self.w * self.h) + 1:
-            self.check_food()
-            head = self.new_head()
-            tail = self.snake[-1]
-            if len(self.snake) > 1:
-                for i in range(len(self.snake) - 1, 0, -1):
-                    self.snake[i] = self.snake[i - 1]
-            self.snake[0] = head
-            if self.new_body:
-                self.snake.append(tail)
-                self.new_body = False
+        if not self.pause:
+            if len(self.snake) != (self.w * self.h) + 1:
+                self.check_food()
+                head = self.new_head()
+                tail = self.snake[-1]
+                if len(self.snake) > 1:
+                    for i in range(len(self.snake) - 1, 0, -1):
+                        self.snake[i] = self.snake[i - 1]
+                self.snake[0] = head
+                if self.new_body:
+                    self.snake.append(tail)
+                    self.new_body = False
 
 
 def main():
@@ -174,8 +183,8 @@ def main():
 
     os.environ['SDL_VIDEO_CENTERED'] = "True"
 
-    n, m = 11, 28
-    cell_size = 30
+    n, m = 6, 5
+    cell_size = 60
     width, height = m * cell_size, n * cell_size
 
     screen = pygame.display.set_mode((width, height))
@@ -186,7 +195,7 @@ def main():
 
     while not done:
         done = game.events()
-        game.run_logic()
+        #game.run_logic()
         game.display_screen(screen)
 
         clock.tick(3)
