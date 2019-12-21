@@ -3,6 +3,7 @@ import random
 from pygame.locals import *
 from hamiltonian import *
 
+### NOT YET COMPLETE STILL HAS BUGS
 
 class Game:
     def __init__(self, n, m, cell_size):
@@ -59,7 +60,7 @@ class Game:
         '''
 
     def game_over(self):
-        for body in self.snake[1:]:
+        for body in self.snake[2:]:
             if self.snake[0] == body:
                 return True
         return False
@@ -185,12 +186,12 @@ class Game:
 def main():
     pygame.init()
     pygame.font.init()
-    pygame.display.set_caption("Arcade Machine")
+    pygame.display.set_caption("Snake")
 
     os.environ['SDL_VIDEO_CENTERED'] = "True"
 
-    n, m = 5, 4
-    cell_size = 60
+    n, m = 9, 12
+    cell_size = 30
     width, height = m * cell_size, n * cell_size
 
     screen = pygame.display.set_mode((width, height))
@@ -204,7 +205,7 @@ def main():
         game.run_logic()
         game.display_screen(screen)
 
-        clock.tick(3)
+        clock.tick(60)
 
 
 if __name__ == "__main__":
