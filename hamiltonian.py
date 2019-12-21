@@ -2,60 +2,65 @@ import numpy as np
 import random
 
 
-class Path:
+# The algorithm will work by having the grid be 0 to (w*h) with 0 in top left in one long array
+# A grid of (m x n) can only be Hamiltonian iff m OR n is even and m,n > 1
+
+
+def getXY(n, w):
+    x = n % w
+    y = n // w
+    return x, y
+
+
+def getLinear(x, y, w):
+    return y * w + x
+
+
+class Cell:
     def __init__(self, x, y):
-        self.size = x * y
         self.x = x
         self.y = y
-        # The entire graph - a grid
-        self.graph = [[0 for _ in range(x)] for _ in range(y)]
-        # List of directions to take one after another
-        self.path_dir = []
-        # List of actual coordinates taken
-        self.path_cor = []
-        self.do_not_visit = [np.array([0, 0])]
+        self.neighbours = []
 
-        self.current = np.array([0, 0])
-        self.back_track_levels = [[-1 for _ in range(x)] for _ in range(y)]
-        self.back_track_level = 0
 
-    def check_point(self, check, list):
-        for point in list:
-            if np.array_equal(point, check):
-                return False
-        return True
+class Graph:
+    def __init__(self, w, h):
+        self.width = w
+        self.height = h
+        self.size = w * h
+        self.cells = []
 
-    def check_valid(self, pos, current):
-        # Must be left, right, up or down from current - i.e. 1 away
-        if (abs(pos[0] - current[0]) + abs(pos[1] - current[1])) != 1:
-            return False
+    def initialise_cells(self):
+        # Initialises all the cells
+        for i in range(self.size):
+            x, y = getXY(i, self.width)
+            self.cells.append(Cell(x, y))
 
-        # Cannot already be visited
-        if pos in self.path_cor:
-            return False
+    def initialise_neighbours(self):
+        for cell in self.cells:
+            # Get the linear value for each neighbour
+            left = getLinear(cell.x - 1, cell.y, self.width)
+            right = getLinear(cell.x + 1, cell.y, self.width)
+            up = getLinear(cell.x, cell.y - 1, self.width)
+            down = getLinear(cell.x - 1, cell.y + 1, self.width)
 
-        return True
+            # If in range, add the relevent cells to the neighbours list
+            if 0 <= left < self.size:
+                cell.neighbours.append(self.cells[left])
+            if 0 <= right < self.size:
+                cell.neighbours.append(self.cells[right])
+            if 0 <= up < self.size:
+                cell.neighbours.append(self.cells[up])
+            if 0 <= down < self.size:
+                cell.neighbours.append(self.cells[down])
 
-    def get_neighbours(self):
-        neighbours = []
-        neighbouring_cells = [np.array([-1, 0]), np.array([1, 0]), np.array([0, -1]), np.array([0, 1])]
-        for neighb in neighbouring_cells:
-            potential = self.current + neighb
-            if self.check_point(potential, self.path_cor) and (0 <= potential[0] < self.x) and\
-                    (0 <= potential[1] < self.y) and (self.back_track_level != self.back_track_levels[potential[1]][potential[0]]):
-                neighbours.append(potential)
 
-        if neighbours:
-            return neighbours
-        return False
+class Path:
+    def __init__(self, w, h):
+        # Get the graph set up
+        self.graph = Graph(w, h)
+        self.graph.initialise_cells()
+        self.graph.initialise_neighbours()
 
-    def complete(self):
-        if len(self.path_cor) >= 2:
-            if (abs(self.path_cor[0][0] - self.path_cor[-1][0]) + abs(self.path_cor[0][1] - self.path_cor[-1][0])) != 1 and \
-                    len(self.path_cor) == self.size:
-                return True
-        return False
-
-    def solve(self):
-        pass
-
+        # The linear number of each member in the path
+        self.path = []
